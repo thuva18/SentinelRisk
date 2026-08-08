@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Environment
+.env
+.env.local
+*.env
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Model artifacts (large files — generate via notebook)
+# Uncomment to track them:
+# backend/lgbm_ibm_fraud_model.pkl
+# backend/shap_ibm_explainer.pkl
+backend/lgbm_ibm_fraud_model.pkl
+backend/shap_ibm_explainer.pkl
+
+# Dataset (too large for git)
+notebooks/card_transaction.v1.csv
+notebooks/*.csv

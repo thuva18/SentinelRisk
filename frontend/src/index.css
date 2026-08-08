@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html, body {
+    font-family: 'Inter', sans-serif;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    margin: 0;
+    padding: 0;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #1e293b; }
+  ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl;
+  }
+  .kpi-card {
+    @apply glass-card p-5 flex flex-col gap-2 hover:border-slate-600 transition-all duration-300;
+  }
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200;
+  }
+  .neon-text { color: #39FF14; }
+  .crimson-text { color: #DC143C; }
+  .feed-item {
+    @apply glass-card p-3 cursor-pointer hover:border-blue-500/50 hover:bg-slate-700/60 transition-all duration-200 animate-slide-in;
+  }
+  .feed-item.selected {
+    @apply border-blue-500 bg-slate-700/80;
+  }
+}
