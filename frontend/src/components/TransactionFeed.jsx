@@ -6,16 +6,18 @@ const CHIP_ICONS = {
   'Swipe Transaction': CreditCard,
 };
 
-export default function TransactionFeed({ transactions, selectedTx, onSelect }) {
-  return (
-    <div className="glass-card flex flex-col h-full max-h-[680px]">
-      <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
-        <h2 className="font-semibold text-white text-sm">Live Transaction Feed</h2>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-neon animate-pulse" />
-          <span className="text-xs text-slate-400">{transactions.length} active</span>
+export default function TransactionFeed({ transactions, selectedTx, onSelect, embedded }) {
+  const inner = (
+    <>
+      {!embedded && (
+        <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
+          <h2 className="font-semibold text-white text-sm">Live Transaction Feed</h2>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-neon animate-pulse" />
+            <span className="text-xs text-slate-400">{transactions.length} active</span>
+          </div>
         </div>
-      </div>
+      )}
       <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
         {transactions.map((tx) => {
           const Icon = CHIP_ICONS[tx.chipType] || CreditCard;
@@ -61,6 +63,9 @@ export default function TransactionFeed({ transactions, selectedTx, onSelect }) 
       <div className="p-3 border-t border-slate-700/50">
         <p className="text-xs text-slate-500 text-center">Click any transaction to analyze →</p>
       </div>
-    </div>
+    </>
   );
+
+  if (embedded) return <div className="flex flex-col flex-1 overflow-hidden">{inner}</div>;
+  return <div className="glass-card flex flex-col h-full max-h-[680px]">{inner}</div>;
 }

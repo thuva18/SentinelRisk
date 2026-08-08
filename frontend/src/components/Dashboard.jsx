@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Shield, AlertTriangle, Activity, TrendingUp, Cpu, Clock } from 'lucide-react';
+import { Shield, AlertTriangle, Activity, TrendingUp, Cpu, Clock, Radio, PenLine } from 'lucide-react';
 import TransactionFeed from './TransactionFeed';
 import RiskAlertCard from './RiskAlertCard';
 import ShapExplainer from './ShapExplainer';
+import ManualCheck from './ManualCheck';
 
 export default function Dashboard({ transactions, selectedTx, evaluation, isLoading, stats, onSelectTransaction }) {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('en-US', { hour12: false }));
+  const [leftTab, setLeftTab] = useState('feed'); // 'feed' | 'manual'
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -83,11 +85,50 @@ export default function Dashboard({ transactions, selectedTx, evaluation, isLoad
 
         {/* Main Grid */}
         <div className="grid grid-cols-3 gap-4 flex-1">
-          <TransactionFeed
-            transactions={transactions}
-            selectedTx={selectedTx}
-            onSelect={onSelectTransaction}
-          />
+          {/* Left Panel — tabbed */}
+          <div className="glass-card flex flex-col h-full max-h-[680px]">
+            {/* Tab switcher */}
+            <div className="flex border-b border-slate-700/50">
+              <button
+                onClick={() => setLeftTab('feed')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
+                  leftTab === 'feed'
+                    ? 'text-white border-b-2 border-blue-500 bg-slate-700/30'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Radio className="w-3.5 h-3.5" />
+                Live Feed
+              </button>
+              <button
+                onClick={() => setLeftTab('manual')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
+                  leftTab === 'manual'
+                    ? 'text-white border-b-2 border-purple-500 bg-slate-700/30'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <PenLine className="w-3.5 h-3.5" />
+                Manual Check
+              </button>
+            </div>
+
+            {/* Tab content */}
+            {leftTab === 'feed' ? (
+              <TransactionFeed
+                transactions={transactions}
+                selectedTx={selectedTx}
+                onSelect={onSelectTransaction}
+                embedded
+              />
+            ) : (
+              <ManualCheck
+                onAnalyze={onSelectTransaction}
+                isLoading={isLoading}
+              />
+            )}
+          </div>
+
           <RiskAlertCard
             transaction={selectedTx}
             evaluation={evaluation}
