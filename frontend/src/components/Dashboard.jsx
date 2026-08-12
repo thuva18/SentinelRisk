@@ -6,8 +6,10 @@ import ShapExplainer from './ShapExplainer';
 import ManualCheck from './ManualCheck';
 import TrendChart from './TrendChart';
 import HistoryLog from './HistoryLog';
+import InsightsDashboard from './InsightsDashboard';
 
 export default function Dashboard({ transactions, selectedTx, evaluation, isLoading, stats, onSelectTransaction, trendData, history }) {
+  const [mainTab, setMainTab] = useState('dashboard'); // 'dashboard' | 'insights'
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('en-US', { hour12: false }));
   const [leftTab, setLeftTab] = useState('feed'); // 'feed' | 'manual'
 
@@ -34,6 +36,24 @@ export default function Dashboard({ transactions, selectedTx, evaluation, isLoad
             <p className="text-xs text-slate-400 font-medium">Real-Time Fraud Detection Platform</p>
           </div>
         </div>
+        <div className="flex bg-slate-800/80 rounded-lg p-1 border border-slate-700/50">
+          <button
+            onClick={() => setMainTab('dashboard')}
+            className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all duration-200 ${
+              mainTab === 'dashboard' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Live Dashboard
+          </button>
+          <button
+            onClick={() => setMainTab('insights')}
+            className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all duration-200 ${
+              mainTab === 'insights' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Session Insights
+          </button>
+        </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-neon animate-pulse" style={{boxShadow: '0 0 6px #39FF14'}} />
@@ -47,103 +67,109 @@ export default function Dashboard({ transactions, selectedTx, evaluation, isLoad
       </header>
 
       <main className="flex-1 p-6 flex flex-col gap-6">
-        {/* KPI Row */}
-        <div className="grid grid-cols-4 gap-4">
-          <div className="kpi-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Total Transactions</span>
-              <Activity className="w-4 h-4 text-blue-400" />
-            </div>
-            <span className="text-3xl font-bold text-white">{stats.total.toLocaleString()}</span>
-            <span className="text-xs text-slate-500">since session start</span>
-          </div>
-          <div className="kpi-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Frauds Detected</span>
-              <AlertTriangle className="w-4 h-4 text-crimson" />
-            </div>
-            <span className="text-3xl font-bold text-crimson">{stats.fraudCount}</span>
-            <span className="text-xs text-slate-500">high-risk transactions</span>
-          </div>
-          <div className="kpi-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Alert Rate</span>
-              <TrendingUp className="w-4 h-4 text-amber-400" />
-            </div>
-            <span className="text-3xl font-bold text-amber-400">{stats.alertRate}%</span>
-            <span className="text-xs text-slate-500">fraud rate this session</span>
-          </div>
-          <div className="kpi-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Model Status</span>
-              <Cpu className="w-4 h-4 text-slate-400" />
-            </div>
-            <span className={`text-3xl font-bold ${modelModeColor}`}>
-              {evaluation ? modelModeLabel : '—'}
-            </span>
-            <span className="text-xs text-slate-500">LightGBM + SHAP</span>
-          </div>
-        </div>
-
-        {/* Trend Chart */}
-        <TrendChart trendData={trendData} />
-
-        {/* Main Grid */}
-        <div className="grid grid-cols-3 gap-4 flex-1">
-          {/* Left Panel — tabbed */}
-          <div className="glass-card flex flex-col h-full max-h-[680px]">
-            {/* Tab switcher */}
-            <div className="flex border-b border-slate-700/50">
-              <button
-                onClick={() => setLeftTab('feed')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
-                  leftTab === 'feed'
-                    ? 'text-white border-b-2 border-blue-500 bg-slate-700/30'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Radio className="w-3.5 h-3.5" />
-                Live Feed
-              </button>
-              <button
-                onClick={() => setLeftTab('manual')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
-                  leftTab === 'manual'
-                    ? 'text-white border-b-2 border-purple-500 bg-slate-700/30'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <PenLine className="w-3.5 h-3.5" />
-                Manual Check
-              </button>
+        {mainTab === 'dashboard' ? (
+          <>
+            {/* KPI Row */}
+            <div className="grid grid-cols-4 gap-4">
+              <div className="kpi-card">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Total Transactions</span>
+                  <Activity className="w-4 h-4 text-blue-400" />
+                </div>
+                <span className="text-3xl font-bold text-white">{stats.total.toLocaleString()}</span>
+                <span className="text-xs text-slate-500">since session start</span>
+              </div>
+              <div className="kpi-card">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Frauds Detected</span>
+                  <AlertTriangle className="w-4 h-4 text-crimson" />
+                </div>
+                <span className="text-3xl font-bold text-crimson">{stats.fraudCount}</span>
+                <span className="text-xs text-slate-500">high-risk transactions</span>
+              </div>
+              <div className="kpi-card">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Alert Rate</span>
+                  <TrendingUp className="w-4 h-4 text-amber-400" />
+                </div>
+                <span className="text-3xl font-bold text-amber-400">{stats.alertRate}%</span>
+                <span className="text-xs text-slate-500">fraud rate this session</span>
+              </div>
+              <div className="kpi-card">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Model Status</span>
+                  <Cpu className="w-4 h-4 text-slate-400" />
+                </div>
+                <span className={`text-3xl font-bold ${modelModeColor}`}>
+                  {evaluation ? modelModeLabel : '—'}
+                </span>
+                <span className="text-xs text-slate-500">LightGBM + SHAP</span>
+              </div>
             </div>
 
-            {/* Tab content */}
-            {leftTab === 'feed' ? (
-              <TransactionFeed
-                transactions={transactions}
-                selectedTx={selectedTx}
-                onSelect={onSelectTransaction}
-                embedded
-              />
-            ) : (
-              <ManualCheck
-                onAnalyze={onSelectTransaction}
+            {/* Trend Chart */}
+            <TrendChart trendData={trendData} />
+
+            {/* Main Grid */}
+            <div className="grid grid-cols-3 gap-4 flex-1">
+              {/* Left Panel — tabbed */}
+              <div className="glass-card flex flex-col h-full max-h-[680px]">
+                {/* Tab switcher */}
+                <div className="flex border-b border-slate-700/50">
+                  <button
+                    onClick={() => setLeftTab('feed')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
+                      leftTab === 'feed'
+                        ? 'text-white border-b-2 border-blue-500 bg-slate-700/30'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <Radio className="w-3.5 h-3.5" />
+                    Live Feed
+                  </button>
+                  <button
+                    onClick={() => setLeftTab('manual')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
+                      leftTab === 'manual'
+                        ? 'text-white border-b-2 border-purple-500 bg-slate-700/30'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <PenLine className="w-3.5 h-3.5" />
+                    Manual Check
+                  </button>
+                </div>
+
+                {/* Tab content */}
+                {leftTab === 'feed' ? (
+                  <TransactionFeed
+                    transactions={transactions}
+                    selectedTx={selectedTx}
+                    onSelect={onSelectTransaction}
+                    embedded
+                  />
+                ) : (
+                  <ManualCheck
+                    onAnalyze={onSelectTransaction}
+                    isLoading={isLoading}
+                  />
+                )}
+              </div>
+
+              <RiskAlertCard
+                transaction={selectedTx}
+                evaluation={evaluation}
                 isLoading={isLoading}
               />
-            )}
-          </div>
+              <ShapExplainer evaluation={evaluation} isLoading={isLoading} />
+            </div>
 
-          <RiskAlertCard
-            transaction={selectedTx}
-            evaluation={evaluation}
-            isLoading={isLoading}
-          />
-          <ShapExplainer evaluation={evaluation} isLoading={isLoading} />
-        </div>
-
-        {/* Session History Log */}
-        <HistoryLog history={history} />
+            {/* Session History Log */}
+            <HistoryLog history={history} />
+          </>
+        ) : (
+          <InsightsDashboard history={history} />
+        )}
       </main>
     </div>
   );

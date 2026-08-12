@@ -45,9 +45,15 @@ export default function ShapExplainer({ evaluation, isLoading }) {
 
         {!isLoading && shapData.length === 0 && (
           <div className="flex flex-col items-center gap-4 text-center px-4">
-            <BrainCircuit className="w-12 h-12 text-slate-600" />
-            <p className="text-slate-400 font-medium">No Explanation Yet</p>
-            <p className="text-slate-500 text-sm">Select and analyze a transaction to see which features drove the model's decision.</p>
+            <div className="relative w-24 h-24 rounded-full border border-purple-500/30 flex items-center justify-center overflow-hidden bg-slate-800/50">
+              <div className="absolute inset-0 bg-purple-500/10 animate-pulse" />
+              <div className="absolute w-[150%] h-[150%] bg-gradient-to-b from-transparent to-purple-500/30 origin-bottom animate-scan" style={{ clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)', animationDelay: '0.5s' }} />
+              <BrainCircuit className="w-8 h-8 text-purple-400/80 z-10" />
+            </div>
+            <div>
+              <p className="text-slate-300 font-semibold mb-1">No Explanation Yet</p>
+              <p className="text-slate-500 text-xs px-2">Select and analyze a transaction to see which features drove the model's decision.</p>
+            </div>
           </div>
         )}
 

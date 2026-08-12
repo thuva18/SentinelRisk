@@ -1,9 +1,9 @@
 import { Shield, ShieldAlert, Loader2, MousePointerClick } from 'lucide-react';
 
 function getRiskLevel(prob) {
-  if (prob < 0.5) return { label: 'LOW RISK', color: '#39FF14', textClass: 'text-neon', bgClass: 'bg-green-900/20', borderClass: 'border-green-500/30' };
-  if (prob < 0.8) return { label: 'MEDIUM RISK', color: '#F59E0B', textClass: 'text-amber-400', bgClass: 'bg-amber-900/20', borderClass: 'border-amber-500/30' };
-  return { label: 'HIGH RISK — FRAUD', color: '#DC143C', textClass: 'text-crimson', bgClass: 'bg-red-900/20', borderClass: 'border-red-500/30' };
+  if (prob < 0.5) return { label: 'LOW RISK', color: '#39FF14', textClass: 'text-neon', bgClass: 'bg-green-900/20', borderClass: 'border-green-500/30', glowClass: '' };
+  if (prob < 0.8) return { label: 'MEDIUM RISK', color: '#F59E0B', textClass: 'text-amber-400', bgClass: 'bg-amber-900/20', borderClass: 'border-amber-500/30', glowClass: 'animate-pulse-glow-amber' };
+  return { label: 'HIGH RISK — FRAUD', color: '#DC143C', textClass: 'text-crimson', bgClass: 'bg-red-900/20', borderClass: 'border-red-500/30', glowClass: 'animate-pulse-glow-red' };
 }
 
 export default function RiskAlertCard({ transaction, evaluation, isLoading }) {
@@ -11,7 +11,7 @@ export default function RiskAlertCard({ transaction, evaluation, isLoading }) {
   const risk = prob !== null ? getRiskLevel(prob) : null;
 
   return (
-    <div className="glass-card flex flex-col h-full max-h-[680px]">
+    <div className={`glass-card flex flex-col h-full max-h-[680px] transition-all duration-500 ${risk?.glowClass || ''}`}>
       <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
         <h2 className="font-semibold text-white text-sm">Risk Assessment</h2>
         {evaluation && (
@@ -32,11 +32,15 @@ export default function RiskAlertCard({ transaction, evaluation, isLoading }) {
 
         {!isLoading && !evaluation && (
           <div className="flex flex-col items-center gap-4 text-center">
-            <div className="p-5 bg-slate-700/40 rounded-full">
-              <MousePointerClick className="w-12 h-12 text-slate-500" />
+            <div className="relative w-24 h-24 rounded-full border border-blue-500/30 flex items-center justify-center overflow-hidden bg-slate-800/50">
+              <div className="absolute inset-0 bg-blue-500/10 animate-pulse" />
+              <div className="absolute w-[150%] h-[150%] bg-gradient-to-b from-transparent to-blue-500/30 origin-bottom animate-scan" style={{ clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)' }} />
+              <Shield className="w-8 h-8 text-blue-400/80 z-10" />
             </div>
-            <p className="text-slate-400 font-medium">Select a Transaction</p>
-            <p className="text-slate-500 text-sm">Click any item in the feed to run fraud analysis</p>
+            <div>
+              <p className="text-slate-300 font-semibold mb-1">Awaiting Transaction</p>
+              <p className="text-slate-500 text-xs px-4">Select an item from the Live Feed or use Manual Check to run risk analysis.</p>
+            </div>
           </div>
         )}
 
