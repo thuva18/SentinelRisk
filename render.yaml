@@ -1,0 +1,18 @@
+# Render.com Blueprint — 1-click backend deployment
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: sentinel-risk-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt --prefer-binary
+    startCommand: python3 -m uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        value: 10000
+    healthCheckPath: /api/health
+    autoDeploy: true

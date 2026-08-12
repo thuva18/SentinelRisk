@@ -90,7 +90,8 @@ export default function App() {
 
     let result;
     try {
-      const response = await fetch('http://localhost:8000/api/evaluate', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_URL}/api/evaluate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(tx.apiPayload),
