@@ -1,11 +1,22 @@
+# SentinelRisk Backend — Runtime Dependencies
+# Install with: pip3 install -r requirements.txt --prefer-binary
+
+# API framework
 fastapi==0.111.0
 uvicorn[standard]==0.30.1
-pandas==2.2.2
-numpy==1.26.4
-lightgbm==4.3.0
-shap==0.45.1
-joblib==1.4.2
-pydantic==2.7.1
-scikit-learn==1.5.0
-imbalanced-learn==0.12.3
 python-multipart==0.0.9
+
+# Data & ML
+pandas>=2.0.0
+numpy>=1.24.0
+lightgbm>=4.0.0
+shap>=0.44.0
+joblib>=1.3.0
+
+# Validation
+pydantic>=2.5.0
+
+# Note: scikit-learn and imbalanced-learn are needed only for the
+# training notebook (notebooks/sentinel_risk_training.ipynb), not the API.
+# Install them separately in your notebook environment:
+#   pip3 install scikit-learn imbalanced-learn --prefer-binary

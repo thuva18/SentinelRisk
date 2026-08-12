@@ -5,6 +5,14 @@ import numpy as np
 import pandas as pd
 from typing import Optional
 
+# shap requires llvmlite which can be large — degrade gracefully if not installed
+try:
+    import shap as _shap_module
+    SHAP_AVAILABLE = True
+except ImportError:
+    SHAP_AVAILABLE = False
+    logging.getLogger(__name__).warning("⚠️  shap not installed — SHAP values will use mock fallback")
+
 logger = logging.getLogger(__name__)
 
 MODEL = None
