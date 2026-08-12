@@ -4,8 +4,10 @@ import TransactionFeed from './TransactionFeed';
 import RiskAlertCard from './RiskAlertCard';
 import ShapExplainer from './ShapExplainer';
 import ManualCheck from './ManualCheck';
+import TrendChart from './TrendChart';
+import HistoryLog from './HistoryLog';
 
-export default function Dashboard({ transactions, selectedTx, evaluation, isLoading, stats, onSelectTransaction }) {
+export default function Dashboard({ transactions, selectedTx, evaluation, isLoading, stats, onSelectTransaction, trendData, history }) {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('en-US', { hour12: false }));
   const [leftTab, setLeftTab] = useState('feed'); // 'feed' | 'manual'
 
@@ -83,6 +85,9 @@ export default function Dashboard({ transactions, selectedTx, evaluation, isLoad
           </div>
         </div>
 
+        {/* Trend Chart */}
+        <TrendChart trendData={trendData} />
+
         {/* Main Grid */}
         <div className="grid grid-cols-3 gap-4 flex-1">
           {/* Left Panel — tabbed */}
@@ -136,6 +141,9 @@ export default function Dashboard({ transactions, selectedTx, evaluation, isLoad
           />
           <ShapExplainer evaluation={evaluation} isLoading={isLoading} />
         </div>
+
+        {/* Session History Log */}
+        <HistoryLog history={history} />
       </main>
     </div>
   );

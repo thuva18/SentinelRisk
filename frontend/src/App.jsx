@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import Dashboard from './components/Dashboard';
+import ToastNotifications from './components/ToastNotifications';
 
 // Mock transaction generator
 const MERCHANT_NAMES = [
   'Amazon Prime', 'Walmart Supercenter', 'Shell Gas Station', 'Starbucks Coffee',
   'Best Buy Electronics', 'Target Corp', 'Uber Technologies', 'Netflix Inc',
-  'Apple Store', 'McDonald\'s', 'Costco Wholesale', 'Home Depot', 'CVS Pharmacy',
+  'Apple Store', "McDonald's", 'Costco Wholesale', 'Home Depot', 'CVS Pharmacy',
   'Southwest Airlines', 'Steam Games'
 ];
 
@@ -16,6 +17,7 @@ const CHIP_TYPES = ['Chip Transaction', 'Swipe Transaction', 'Online Transaction
 const MCC_CODES = [5411, 5812, 5541, 5999, 5734, 4816, 7011, 5912, 4511];
 
 let txCounter = 1000;
+let evalCounter = 0;
 
 function generateTransaction() {
   const now = new Date();
@@ -25,22 +27,18 @@ function generateTransaction() {
   const city = CITIES[Math.floor(Math.random() * CITIES.length)];
   const mcc = MCC_CODES[Math.floor(Math.random() * MCC_CODES.length)];
   const hasError = Math.random() < 0.08;
-  const errorType = hasError ? (['Bad PIN', 'Insufficient Balance', 'Technical Glitch'][Math.floor(Math.random() * 3)]) : null;
+  const errorType = hasError
+    ? (['Bad PIN', 'Insufficient Balance', 'Technical Glitch'][Math.floor(Math.random() * 3)])
+    : null;
 
   txCounter++;
   return {
     id: `TXN-${txCounter}`,
-    merchant,
-    city,
-    amount,
-    chipType,
-    mcc,
-    errorType,
+    merchant, city, amount, chipType, mcc, errorType,
     hour: now.getHours(),
     minute: now.getMinutes(),
     timestamp: now.toLocaleTimeString('en-US', { hour12: false }),
     card: `**** **** **** ${Math.floor(1000 + Math.random() * 9000)}`,
-    // API payload shape
     apiPayload: {
       amount,
       hour: now.getHours(),
@@ -65,22 +63,32 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState({ total: 8, fraudCount: 0, alertRate: 0 });
 
+  // New state for Tier 1 features
+  const [history, setHistory] = useState([]);         // full evaluation log
+  const [trendData, setTrendData] = useState([]);     // last 20 probabilities
+  const [toasts, setToasts] = useState([]);           // active toast alerts
+
   // Simulate live feed
   useEffect(() => {
     const interval = setInterval(() => {
       setTransactions(prev => {
         const newTx = generateTransaction();
-        const updated = [newTx, ...prev].slice(0, 25);
-        return updated;
+        return [newTx, ...prev].slice(0, 25);
       });
     }, 3500);
     return () => clearInterval(interval);
+  }, []);
+
+  const dismissToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
   const evaluateTransaction = useCallback(async (tx) => {
     setSelectedTx(tx);
     setIsLoading(true);
     setEvaluation(null);
+
+    let result;
     try {
       const response = await fetch('http://localhost:8000/api/evaluate', {
         method: 'POST',
@@ -88,23 +96,12 @@ export default function App() {
         body: JSON.stringify(tx.apiPayload),
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      setEvaluation(data);
-      if (data.prediction === 'Fraud') {
-        setStats(prev => ({
-          ...prev,
-          total: prev.total + 1,
-          fraudCount: prev.fraudCount + 1,
-          alertRate: parseFloat(((prev.fraudCount + 1) / (prev.total + 1) * 100).toFixed(1)),
-        }));
-      } else {
-        setStats(prev => ({ ...prev, total: prev.total + 1 }));
-      }
+      result = await response.json();
     } catch (err) {
       console.error('Evaluation failed:', err);
-      // Offline mock so UI still works without backend
+      // Offline mock fallback
       const prob = parseFloat((Math.random() * 0.95 + 0.02).toFixed(4));
-      setEvaluation({
+      result = {
         fraud_probability: prob,
         prediction: prob >= 0.5 ? 'Fraud' : 'Legitimate',
         model_mode: 'offline-mock',
@@ -116,14 +113,59 @@ export default function App() {
           { feature: 'Errors?_Bad PIN', impact: parseFloat((Math.random() * 0.35).toFixed(4)) },
           { feature: 'Use Chip_Swipe Transaction', impact: parseFloat((-Math.random() * 0.2).toFixed(4)) },
         ].sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact)),
-      });
+      };
     } finally {
       setIsLoading(false);
+    }
+
+    setEvaluation(result);
+
+    // Update KPI stats
+    const isFraud = result.prediction === 'Fraud';
+    setStats(prev => {
+      const newFraud = isFraud ? prev.fraudCount + 1 : prev.fraudCount;
+      const newTotal = prev.total + 1;
+      return {
+        total: newTotal,
+        fraudCount: newFraud,
+        alertRate: parseFloat(((newFraud / newTotal) * 100).toFixed(1)),
+      };
+    });
+
+    // Append to trend chart (keep last 20)
+    evalCounter++;
+    setTrendData(prev => [
+      ...prev,
+      {
+        index: evalCounter,
+        probability: result.fraud_probability,
+        prediction: result.prediction,
+        merchant: tx.merchant,
+        amount: tx.amount,
+      }
+    ].slice(-20));
+
+    // Append to history log
+    setHistory(prev => [
+      { tx, evaluation: result, index: evalCounter },
+      ...prev,
+    ].slice(0, 100));
+
+    // Fire toast for risky transactions (>= 50%)
+    if (result.fraud_probability >= 0.5) {
+      const toastId = `toast-${Date.now()}`;
+      setToasts(prev => [
+        { id: toastId, merchant: tx.merchant, amount: tx.amount, probability: result.fraud_probability },
+        ...prev,
+      ].slice(0, 4)); // max 4 toasts at once
     }
   }, []);
 
   return (
     <div className="min-h-screen bg-slate-900 font-inter">
+      {/* Toast overlay — fixed top-right */}
+      <ToastNotifications toasts={toasts} onDismiss={dismissToast} />
+
       <Dashboard
         transactions={transactions}
         selectedTx={selectedTx}
@@ -131,6 +173,8 @@ export default function App() {
         isLoading={isLoading}
         stats={stats}
         onSelectTransaction={evaluateTransaction}
+        trendData={trendData}
+        history={history}
       />
     </div>
   );
